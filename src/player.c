@@ -19,12 +19,11 @@ Entity *player_new(Vector3D position)
         return NULL;
     }
     
-    ent->model = gf3d_model_load("models/dino.model");
     ent->think = player_think;
     ent->update = player_update;
     vector3d_copy(ent->position,position);
     ent->rotation.x = -GFC_PI;
-    ent->rotation.z = -GFC_HALF_PI;
+    ent->rotation.z = -GFC_PI;
     ent->hidden = 1;
     return ent;
 }
@@ -84,26 +83,17 @@ void player_think(Entity *self)
 
 void player_update(Entity *self)
 {
-    Vector3D forward = {0};
-    Vector3D position;
+    /*Vector3D position;
     Vector3D rotation;
-    Vector2D w;
-    
+
     if (!self)return;
-    
+
     vector3d_copy(position,self->position);
     vector3d_copy(rotation,self->rotation);
-    if (thirdPersonMode)
-    {
-        position.z += 100;
-        rotation.x += M_PI*0.125;
-        w = vector2d_from_angle(self->rotation.z);
-        forward.x = w.x * 100;
-        forward.y = w.y * 100;
-        vector3d_add(position,position,-forward);
-    }
+
     gf3d_camera_set_position(position);
     gf3d_camera_set_rotation(rotation);
+    */
 }
 
 /*eol@eof*/

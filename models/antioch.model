@@ -1,7 +1,7 @@
 {
     "model":
     {
-        "model":"models/antioch/antioch.obj",
+        "model":"models/stage.obj",
         "texture":"models/antioch/antioch.png"
     }
 }

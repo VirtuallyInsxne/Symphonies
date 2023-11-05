@@ -29,6 +29,7 @@ typedef struct Entity_S
     Box         bounds; // for collisions
     int         team;  //same team dont clip
     int         clips;  // if false, skip collisions
+    int         jumped;
 
     void       (*think)(struct Entity_S *self); /**<pointer to the think function*/
     void       (*update)(struct Entity_S *self); /**<pointer to the update function*/

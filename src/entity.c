@@ -148,4 +148,34 @@ void entity_update_all()
     }
 }
 
+void entity_collide_check(Entity* ent) {
+    Box boundA, boundB;
+    if (!ent) return;
+    memcpy(&boundA, &ent->bounds, sizeof(Box));
+    vector3d_add(boundA, boundA, ent->position);
+    for (int i = 0; i < entity_manager.entity_count; i++) {
+        if (!entity_manager.entity_list[i]._inuse)// not used yet
+        {
+            continue;// skip this iteration of the loop
+        }
+        memcpy(&boundB, &entity_manager.entity_list[i].bounds, sizeof(Box));
+        vector3d_add(boundB, boundB, entity_manager.entity_list[i].position);
+    }
+}
+void entity_collide_all() {
+    int i;
+    for (i = 0; i < entity_manager.entity_count; i++)
+    {
+        if (!entity_manager.entity_list[i]._inuse)// not used yet
+        {
+            continue;// skip this iteration of the loop
+        }
+        if (!entity_manager.entity_list[i].clips)// does not clip
+        {
+            continue;// skip this iteration of the loop
+        }
+        entity_collide_check(&entity_manager.entity_list[i]);
+    }
+}
+
 /*eol@eof*/
