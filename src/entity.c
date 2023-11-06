@@ -148,34 +148,45 @@ void entity_update_all()
     }
 }
 
-void entity_collide_check(Entity* ent) {
-    Box boundA, boundB;
-    if (!ent) return;
-    memcpy(&boundA, &ent->bounds, sizeof(Box));
-    vector3d_add(boundA, boundA, ent->position);
-    for (int i = 0; i < entity_manager.entity_count; i++) {
-        if (!entity_manager.entity_list[i]._inuse)// not used yet
-        {
-            continue;// skip this iteration of the loop
-        }
-        memcpy(&boundB, &entity_manager.entity_list[i].bounds, sizeof(Box));
-        vector3d_add(boundB, boundB, entity_manager.entity_list[i].position);
-    }
-}
-void entity_collide_all() {
-    int i;
-    for (i = 0; i < entity_manager.entity_count; i++)
+int entity_check_collision(Entity *self, Entity *other)
+{
+    Box A, B;
+    if((!self) || (!other))
     {
-        if (!entity_manager.entity_list[i]._inuse)// not used yet
-        {
-            continue;// skip this iteration of the loop
-        }
-        if (!entity_manager.entity_list[i].clips)// does not clip
-        {
-            continue;// skip this iteration of the loop
-        }
-        entity_collide_check(&entity_manager.entity_list[i]);
+        slog("Entity missing for collision");
+        return 0;
     }
+    A = self->bounds;
+    B = other->bounds;
+    vector3d_add(A, A, self->position);
+    vector3d_add(B, B, self->position);
+    return gfc_box_overlap(A, B);
+}
+
+Entity *entity_get_collision(Entity *self)
+{
+    int i;
+
+    if(!self)
+    {
+        slog("You don't exist");
+        return NULL;
+    }
+
+    for(i = 0; i < entity_manager.entity_count; i++)
+    {
+            if(!entity_manager.entity_list[i]._inuse) continue;
+            if(self == &entity_manager.entity_list[i]) continue;
+            if(self->parent == &entity_manager.entity_list[i]) continue;
+            if(entity_check_collision(self, &entity_manager.entity_list[i])) return &entity_manager.entity_list[i];
+    }
+
+    return NULL;
+}
+
+void entity_new_target(Entity *self, Entity *target)
+{
+    self->target = target;
 }
 
 /*eol@eof*/

@@ -29,12 +29,15 @@ typedef struct Entity_S
     Box         bounds; // for collisions
     int         team;  //same team dont clip
     int         clips;  // if false, skip collisions
-    int         jumped;
+    int         jumped; // true if entity jumped
+    int         blocking;
+    int         player1; // true if player 1
+    float       cooldown;
 
     void       (*think)(struct Entity_S *self); /**<pointer to the think function*/
     void       (*update)(struct Entity_S *self); /**<pointer to the update function*/
     void       (*draw)(struct Entity_S *self); /**<pointer to an optional extra draw funciton*/
-    void       (*damage)(struct Entity_S *self, float damage, struct Entity_S *inflictor); /**<pointer to the think function*/
+    //void       (*damage)(struct Entity_S *self, float damage, struct Entity_S *inflictor); /**<pointer to the think function*/
     void       (*onDeath)(struct Entity_S *self); /**<pointer to an funciton to call when the entity dies*/
     
     EntityState state;
@@ -46,9 +49,12 @@ typedef struct Entity_S
     Vector3D    scale;
     Vector3D    rotation;
     
-    Uint32      health;     /**<entity dies when it reaches zero*/
+    float      health;     /**<entity dies when it reaches zero*/
+    float      damage;
     // WHATEVER ELSE WE MIGHT NEED FOR ENTITIES
     struct Entity_S *target;    /**<entity to target for weapons / ai*/
+    struct Entity_S *parent;
+    struct Entity_S *shield;
     
     void *customData;   /**<IF an entity needs to keep track of extra data, we can do it here*/
 }Entity;
@@ -98,5 +104,11 @@ void entity_think_all();
  * @brief run the update functions for ALL active entities
  */
 void entity_update_all();
+
+int entity_check_collision(Entity* self, Entity *other);
+
+Entity *entity_get_collision_entity(Entity *self);
+
+void entity_new_target(Entity *self, Entity *target);
 
 #endif

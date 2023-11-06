@@ -4,6 +4,7 @@
 
 #include "gf3d_camera.h"
 #include "agumon.h"
+#include "projectile.h"
 #include "world.h"
 
 
@@ -11,7 +12,7 @@ void agumon_update(Entity *self);
 
 void agumon_think(Entity *self);
 
-Entity *agumon_new(Vector3D position, Vector3D rotation)
+Entity *agumon_new(Vector3D position, Vector3D rotation, int playerNum)
 {
     Entity *ent = NULL;
 
@@ -22,10 +23,20 @@ Entity *agumon_new(Vector3D position, Vector3D rotation)
         return NULL;
     }
 
+    if (playerNum == 1) ent->player1 = 1;
+    if (playerNum != 1) ent->player1 = 0;
+
     ent->model = gf3d_model_load("models/dino.model");
     ent->health = 100.0;
     ent->think = agumon_think;
     ent->update = agumon_update;
+    ent->bounds.x = -2;
+    ent->bounds.y = -2;
+    ent->bounds.z = -2;
+    ent->bounds.w = 4;
+    ent->bounds.h = 4;
+    ent->bounds.d = 4;
+    ent->cooldown = 0;
     ent->jumped = 0;
     vector3d_copy(ent->position,position);
     vector3d_copy(ent->rotation, rotation);
@@ -35,12 +46,21 @@ Entity *agumon_new(Vector3D position, Vector3D rotation)
 void agumon_update(Entity *self)
 {
     float height = 35.0;
+    float limit = 50.0;
+
+    self->cooldown -= 1;
+    self->blocking = 0;
+
+    if (!self->blocking) entity_free(self->shield);
 
     if (!self)
     {
         slog("self pointer not provided");
         return;
     }
+
+    if(self->position.x > limit)self->position.x = limit;
+    if(self->position.x < -limit)self->position.x = -limit;
 
     if(self->position.z > height)
     {
@@ -76,29 +96,75 @@ void agumon_think(Entity *self)
     forward.x = w.x;
     forward.y = w.y;
     w = vector2d_from_angle(self->rotation.z - GFC_HALF_PI);
-    if (keys[SDL_SCANCODE_W] && (self->jumped==0))
+
+    if (self->player1)
     {
-        self->jumped = 1;
-        self->acceleration.z += 1;
-        self->velocity.z += 2;
+        if (keys[SDL_SCANCODE_W] && (self->jumped==0))
+        {
+            self->jumped = 1;
+            self->acceleration.z += 1;
+            self->velocity.z += 2;
+        }
+        if (keys[SDL_SCANCODE_S])
+        {
+            self->position.z -= 1;
+        }
+        if (keys[SDL_SCANCODE_D])
+        {
+            vector3d_add(self->position,self->position,-forward);
+        }
+        if (keys[SDL_SCANCODE_A])
+        {
+            vector3d_add(self->position,self->position,forward);
+        }
+        if (self->cooldown <= 0) {
+            if (keys[SDL_SCANCODE_Q]) {
+                projectile_new(self, self->target, self->position, forward, 10, 10);
+                self->cooldown = 100;
+            }
+        }
     }
-    if (keys[SDL_SCANCODE_S])
+    else
     {
-        self->position.z -= 1;
-    }
-    if (keys[SDL_SCANCODE_D])
-    {
-        vector3d_add(self->position,self->position,-forward);
-    }
-    if (keys[SDL_SCANCODE_A])
-    {
-        vector3d_add(self->position,self->position,forward);
+        if (keys[SDL_SCANCODE_UP] && (self->jumped==0))
+        {
+            self->jumped = 1;
+            self->acceleration.z += 1;
+            self->velocity.z += 2;
+        }
+        if (keys[SDL_SCANCODE_DOWN])
+        {
+            self->position.z -= 1;
+        }
+        if (keys[SDL_SCANCODE_RIGHT])
+        {
+            vector3d_add(self->position,self->position,forward);
+        }
+        if (keys[SDL_SCANCODE_LEFT])
+        {
+            vector3d_add(self->position,self->position,-forward);
+        }
+        if (keys[SDL_SCANCODE_RSHIFT]) {
+            self->blocking = 1;
+            if (self->blocking)
+            {
+                Entity *shield = NULL;
+                shield = entity_new();
+                shield->model = gf3d_model_load("models/dino.model");
+
+                shield->position = self->position;
+                shield->position.x = shield->position.x + 10;
+            }
+
+        }
+        if (self->cooldown <= 0) {
+            if (keys[SDL_SCANCODE_RCTRL]) {
+                projectile_new(self, self->target, self->position, forward, 10, 10);
+                self->cooldown = 100;
+            }
+        }
     }
 
-    if (keys[SDL_SCANCODE_UP])self->rotation.x -= 0.0050;
-    if (keys[SDL_SCANCODE_DOWN])self->rotation.x += 0.0050;
-    if (keys[SDL_SCANCODE_RIGHT])self->rotation.z -= 0.0050;
-    if (keys[SDL_SCANCODE_LEFT])self->rotation.z += 0.0050;
 }
 
 /*eol@eof*/

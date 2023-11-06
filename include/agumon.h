@@ -8,7 +8,7 @@
  * @param position where to spawn the aguman at
  * @return NULL on error, or an agumon entity pointer on success
  */
-Entity *agumon_new(Vector3D position, Vector3D rotation);
+Entity *agumon_new(Vector3D position, Vector3D rotation, int playerNum);
 
 
 #endif
