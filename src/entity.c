@@ -3,13 +3,15 @@
 
 #include "simple_logger.h"
 
+#include "gfc_primitives.h"
+
 #include "entity.h"
 
 typedef struct
 {
     Entity *entity_list;
     Uint32  entity_count;
-    
+    Model  *cube;
 }EntityManager;
 
 static EntityManager entity_manager = {0};
@@ -17,9 +19,10 @@ static EntityManager entity_manager = {0};
 void entity_system_close()
 {
     int i;
+    gf3d_model_free(entity_manager.cube);
     for (i = 0; i < entity_manager.entity_count; i++)
     {
-        entity_free(&entity_manager.entity_list[i]);        
+        entity_free(&entity_manager.entity_list[i]);
     }
     free(entity_manager.entity_list);
     memset(&entity_manager,0,sizeof(EntityManager));
@@ -35,6 +38,7 @@ void entity_system_init(Uint32 maxEntities)
         return;
     }
     entity_manager.entity_count = maxEntities;
+    entity_manager.cube = gf3d_model_load("models/cube.model");
     atexit(entity_system_close);
     slog("entity_system initialized");
 }
@@ -51,10 +55,10 @@ Entity *entity_new()
             entity_manager.entity_list[i].scale.x = 1;
             entity_manager.entity_list[i].scale.y = 1;
             entity_manager.entity_list[i].scale.z = 1;
-            
+
             entity_manager.entity_list[i].color = gfc_color(1,1,1,1);
             entity_manager.entity_list[i].selectedColor = gfc_color(1,1,1,1);
-            
+
             return &entity_manager.entity_list[i];
         }
     }
@@ -73,6 +77,7 @@ void entity_free(Entity *self)
 
 void entity_draw(Entity *self)
 {
+    Matrix4 box;
     if (!self)return;
     if (self->hidden)return;
     gf3d_model_draw(self->model,self->modelMat,gfc_color_to_vector4f(self->color),vector4d(1,1,1,1));
@@ -83,6 +88,17 @@ void entity_draw(Entity *self)
             self->modelMat,
             gfc_color_to_vector4f(self->selectedColor));
     }
+    gfc_matrix4_from_vectors(
+        box,
+        self->position,
+        vector3d(0,0,0),
+        vector3d(self->bounds.w*0.5,self->bounds.h*0.5,self->bounds.d*0.5));
+
+    gf3d_model_draw_highlight(
+        entity_manager.cube,
+        box,
+        vector4d(1,1,0,1));
+
 }
 
 void entity_draw_all()
@@ -117,21 +133,57 @@ void entity_think_all()
     }
 }
 
+int entity_collide_check(Entity *self, Entity *other)
+{
+    Box A, B;
+    if ((!self)||(!other))
+    {
+        slog("missing entity data for collision check");
+        return 0;
+    }
+    gfc_box_cpy(A,self->bounds);
+    gfc_box_cpy(B,other->bounds);
+    vector3d_add(A,A,self->position);
+    vector3d_add(B,B,other->position);
+    return gfc_box_overlap(A,B);
+}
+
+Entity *entity_get_collision_entity(Entity *self)
+{
+    int i;
+    if (!self)
+    {
+        slog("no self provided");
+        return NULL;
+    }
+    for (i = 0; i < entity_manager.entity_count; i++)
+    {
+        if (!entity_manager.entity_list[i]._inuse)continue;
+        if (self == &entity_manager.entity_list[i])continue;
+        if (self->parent == &entity_manager.entity_list[i])continue;
+        if (entity_collide_check(self, &entity_manager.entity_list[i]))
+        {
+            //we have a collision:
+            return &entity_manager.entity_list[i];
+        }
+    }
+    return NULL;
+}
 
 void entity_update(Entity *self)
 {
     if (!self)return;
     // HANDLE ALL COMMON UPDATE STUFF
-    
+
     vector3d_add(self->position,self->position,self->velocity);
     vector3d_add(self->velocity,self->acceleration,self->velocity);
-    
+
     gfc_matrix_identity(self->modelMat);
-    
+
     gfc_matrix_scale(self->modelMat,self->scale);
     gfc_matrix_rotate_by_vector(self->modelMat,self->modelMat,self->rotation);
     gfc_matrix_translate(self->modelMat,self->position);
-    
+
     if (self->update)self->update(self);
 }
 
@@ -146,47 +198,6 @@ void entity_update_all()
         }
         entity_update(&entity_manager.entity_list[i]);
     }
-}
-
-int entity_check_collision(Entity *self, Entity *other)
-{
-    Box A, B;
-    if((!self) || (!other))
-    {
-        slog("Entity missing for collision");
-        return 0;
-    }
-    A = self->bounds;
-    B = other->bounds;
-    vector3d_add(A, A, self->position);
-    vector3d_add(B, B, self->position);
-    return gfc_box_overlap(A, B);
-}
-
-Entity *entity_get_collision(Entity *self)
-{
-    int i;
-
-    if(!self)
-    {
-        slog("You don't exist");
-        return NULL;
-    }
-
-    for(i = 0; i < entity_manager.entity_count; i++)
-    {
-            if(!entity_manager.entity_list[i]._inuse) continue;
-            if(self == &entity_manager.entity_list[i]) continue;
-            if(self->parent == &entity_manager.entity_list[i]) continue;
-            if(entity_check_collision(self, &entity_manager.entity_list[i])) return &entity_manager.entity_list[i];
-    }
-
-    return NULL;
-}
-
-void entity_new_target(Entity *self, Entity *target)
-{
-    self->target = target;
 }
 
 /*eol@eof*/

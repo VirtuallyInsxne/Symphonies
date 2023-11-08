@@ -59,8 +59,7 @@ int main(int argc,char *argv[])
     player2 = agumon_new(vector3d(-35,5,0), vector3d(0,0,GFC_HALF_PI), 2);
     if (player1)player1->selected = 1;
     if (player2)player2->selected = 1;
-    entity_new_target(player1, player2);
-    entity_new_target(player2, player1);
+    Entity *players[] = { player1, player2 };
     w = world_load("config/testworld.json");
     
     slog_sync();
@@ -77,6 +76,7 @@ int main(int argc,char *argv[])
     slog("gf3d main loop begin");
     while(!done)
     {
+        int i;
         gfc_input_update();
         gf2d_font_update();
         
@@ -106,7 +106,22 @@ int main(int argc,char *argv[])
 
                 sprintf(player2HealthString, "%d", (int)player2->health);
                 strcat(player2HealthString, "/100");
-                gf2d_font_draw_line_tag(player2HealthString,FT_H6,gfc_color(1,1,1,1), vector2d(1000,100));
+                gf2d_font_draw_line_tag(player2HealthString,FT_H6,gfc_color(1,1,1,1), vector2d(1050,100));
+
+                for (i = 0; i < 2; i++)
+                {
+                    if (players[i]->health <= 0)
+                    {
+                        if (players[i]->player1 == 1)
+                        {
+                            gf2d_font_draw_line_tag("Player 2 Wins!",FT_H6,gfc_color(1,1,1,1), vector2d(550,100));
+                        }
+                        else
+                        {
+                            gf2d_font_draw_line_tag("Player 1 Wins!",FT_H6,gfc_color(1,1,1,1), vector2d(550,100));
+                        }
+                    }
+                }
                 
                 gf2d_draw_rect(gfc_rect(10 ,10,1000,32),gfc_color8(255,255,255,255));
                 
