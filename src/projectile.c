@@ -68,7 +68,7 @@ Entity *short_projectile_new(Entity *parent,Vector3D position, Vector3D dir, flo
     self->think = projectile_think;
     self->update = projectile_update;
     self->damage = damage;
-    self->health = 50;
+    self->health = 100;
     self->model = gf3d_model_load("models/dino.model");
 
     return self;
@@ -124,7 +124,6 @@ void projectile_think(Entity *self)
 void projectile_update(Entity *self)
 {
     if (!self)return;
-    if (!self->blocking)return;
     if (self->health < 10) entity_free(self);
     self->health -= 10;
     slog("projectile health: %i",self->health);
