@@ -30,7 +30,8 @@ int main(int argc,char *argv[])
     int a;
     
     World *w;
-    Entity *agu;
+    Entity *player1;
+    Entity *player2;
     Matrix4 skyMat;
     Model *sky;
 
@@ -54,12 +55,15 @@ int main(int argc,char *argv[])
     entity_system_init(1024);
     
     
-    agu = agumon_new(vector3d(50,0,0), vector3d(0,0,-GFC_HALF_PI));
-    if (agu)agu->selected = 1;
+    player1 = agumon_new(vector3d(35,5,0), vector3d(0,0,-GFC_HALF_PI), 1);
+    player2 = agumon_new(vector3d(-35,5,0), vector3d(0,0,GFC_HALF_PI), 2);
+    if (player1)player1->selected = 1;
+    if (player2)player2->selected = 1;
+    Entity *players[] = { player1, player2 };
     w = world_load("config/testworld.json");
     
     slog_sync();
-    gf3d_camera_set_position(vector3d(0,100,50));
+    gf3d_camera_set_position(vector3d(0,90,40));
     gf3d_camera_set_rotation(vector3d(-GFC_PI,0,-GFC_PI));
     gf3d_camera_set_scale(vector3d(1,1,1));
 
@@ -72,6 +76,7 @@ int main(int argc,char *argv[])
     slog("gf3d main loop begin");
     while(!done)
     {
+        int i;
         gfc_input_update();
         gf2d_font_update();
         
@@ -92,11 +97,31 @@ int main(int argc,char *argv[])
                 gf2d_draw_rect_filled(gfc_rect(10 ,10,1000,32),gfc_color8(128,128,128,255));
                 gf2d_font_draw_line_tag("Press ALT+F4 to exit",FT_H1,gfc_color(1,1,1,1), vector2d(10,10));
 
-                char healthString[50];
+                char player1HealthString[50];
+                char player2HealthString[50];
 
-                sprintf(healthString, "%d", agu->health);
-                strcat(healthString, "/100");
-                gf2d_font_draw_line_tag(healthString,FT_H6,gfc_color(1,1,1,1), vector2d(10,300));
+                sprintf(player1HealthString, "%d", (int)player1->health);
+                strcat(player1HealthString, "/100");
+                gf2d_font_draw_line_tag(player1HealthString,FT_H6,gfc_color(1,1,1,1), vector2d(50,100));
+
+                sprintf(player2HealthString, "%d", (int)player2->health);
+                strcat(player2HealthString, "/100");
+                gf2d_font_draw_line_tag(player2HealthString,FT_H6,gfc_color(1,1,1,1), vector2d(1050,100));
+
+                for (i = 0; i < 2; i++)
+                {
+                    if (players[i]->health <= 0)
+                    {
+                        if (players[i]->player1 == 1)
+                        {
+                            gf2d_font_draw_line_tag("Player 2 Wins!",FT_H6,gfc_color(1,1,1,1), vector2d(550,100));
+                        }
+                        else
+                        {
+                            gf2d_font_draw_line_tag("Player 1 Wins!",FT_H6,gfc_color(1,1,1,1), vector2d(550,100));
+                        }
+                    }
+                }
                 
                 gf2d_draw_rect(gfc_rect(10 ,10,1000,32),gfc_color8(255,255,255,255));
                 
