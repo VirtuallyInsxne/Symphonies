@@ -117,10 +117,9 @@ void entity_think_all();
  */
 void entity_update_all();
 
-int entity_check_collision(Entity* self, Entity *other);
+int entity_check_collision(Entity *self, Entity *other);
 
-Entity *entity_get_collision_entity(Entity *self);
+Entity *entity_get_collision(Entity *self);
 
-void entity_new_target(Entity *self, Entity *target);
 
 #endif

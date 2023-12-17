@@ -4,8 +4,6 @@
 
 #include "gf3d_camera.h"
 #include "agumon.h"
-#include "projectile.h"
-
 
 void agumon_update(Entity *self);
 
@@ -34,21 +32,19 @@ Entity *agumon_new(Vector3D position, Vector3D rotation, int playerNum)
     if (playerNum != 1) ent->player1 = 0;
 
     ent->model = gf3d_model_load("models/dino.model");
-    ent->health = 100.0;
+    ent->health = 100;
     ent->think = agumon_think;
     ent->update = agumon_update;
     ent->onDamage = agumon_damage;
-    ent->bounds.x = -10;
-    ent->bounds.y = -10;
-    ent->bounds.z = -10;
-    ent->bounds.w = 20;
-    ent->bounds.h = 20;
-    ent->bounds.d = 20;
+
+    Box b = gfc_box(position.x, position.y, position.z, 1, 1, 2);
+    ent->bounds = b;
+
     ent->projectileCooldown = 0;
     ent->punchCooldown = 0;
     ent->jumped = 0;
     ent->blocking = 0;
-    vector3d_copy(ent->position,position);
+    vector3d_copy(ent->position, position);
     vector3d_copy(ent->rotation, rotation);
     return ent;
 }
@@ -61,8 +57,6 @@ void agumon_update(Entity *self)
     self->projectileCooldown -= 1;
     self->punchCooldown -= 1;
     self->blocking = 0;
-
-    if (!self->blocking) entity_free(self->shield);
 
     if (!self)
     {
@@ -99,109 +93,132 @@ void agumon_update(Entity *self)
 void agumon_think(Entity *self)
 {
     Vector3D forward = {0};
-    Vector3D backward = {0};
-    Vector3D shieldPosition;
     Vector2D w;
+    Entity *other;
+
     const Uint8 * keys;
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
+
+    SDL_Joystick *joystick;
+    joystick = SDL_JoystickOpen(0);
+    slog("Axes detected: %i", SDL_JoystickNumAxes(joystick));
 
     w = vector2d_from_angle(self->rotation.z);
     forward.x = w.x;
     forward.y = w.y;
-    w = vector2d_from_angle(self->rotation.z);
-    backward.x = -w.x;
-    backward.y = -w.y;
     w = vector2d_from_angle(self->rotation.z - GFC_HALF_PI);
 
-    shieldPosition = self->position;
-    if (self->player1)shieldPosition.x = self->position.x - 15;
-    if (!self->player1)shieldPosition.x = self->position.x + 15;
+    other = entity_get_collision(self);
 
-    if (self->player1)
+    if(other != NULL && other->type == ENT_P2 && self->state == ES_attack)
     {
-        if (keys[SDL_SCANCODE_W] && (self->jumped==0))
-        {
-            self->jumped = 1;
-            self->acceleration.z += 1;
-            self->velocity.z += 2;
-        }
-        if (keys[SDL_SCANCODE_S])
-        {
-            self->position.z -= 1;
-        }
-        if (keys[SDL_SCANCODE_D])
-        {
-            vector3d_add(self->position,self->position,-forward);
-        }
-        if (keys[SDL_SCANCODE_A])
-        {
-            vector3d_add(self->position,self->position,forward);
-        }
-        if (keys[SDL_SCANCODE_TAB]) {
-            self->blocking = 1;
-            if (self->blocking)
-            {
-                shield_new(self, shieldPosition, backward);
-                self->blocking = 0;
-            }
+            slog("Collision between players occured");
+            other->health -= 10;
+    }
 
+    if (!self)return;
+
+
+    if(SDL_JoystickGetAxis(joystick, 0) > 32700){
+       slog("axis movement detected");
+    }
+
+    if ((keys[SDL_SCANCODE_W] || SDL_JoystickGetAxis(joystick, 1) < -32700) && (self->jumped == 0))
+    {
+        self->jumped = 1;
+        self->acceleration.z += 1;
+        self->velocity.z += 2;
+    }
+    if (keys[SDL_SCANCODE_S] || SDL_JoystickGetAxis(joystick, 1) > 32700)
+    {
+        self->position.z -= 1;
+    }
+    if (keys[SDL_SCANCODE_D] || SDL_JoystickGetAxis(joystick, 0) > 32700)
+    {
+        vector3d_add(self->position,self->position,forward);
+    }
+    if (keys[SDL_SCANCODE_A] || SDL_JoystickGetAxis(joystick, 0) < -32700)
+    {
+        vector3d_add(self->position,self->position,-forward);
+    }
+    /*if(self->atkCooldown <= 0)
+    {
+        if(SDL_JoystickGetButton(joystick, 0) == 1)
+        {
+                slog("Cross");
+                gf3d_model_free(self->model);
+                self->model = gf3d_model_load("models/kiryuRP.model");
+                self->state = ES_attack;
+                self->atkCooldown = 400;
         }
-        if (self->projectileCooldown <= 0) {
-            if (keys[SDL_SCANCODE_Q]) {
-                projectile_new(self, self->position, backward, 1, 10);
-                self->projectileCooldown = 100;
-            }
+        if(SDL_JoystickGetButton(joystick, 1) == 1)
+        {
+                slog("Circle");
+                gf3d_model_free(self->model);
+                self->model = gf3d_model_load("models/kiryuRK.model");
+                self->state = ES_attack;
+                self->atkCooldown = 600;
         }
-        if (self->punchCooldown <= 0) {
-            if (keys[SDL_SCANCODE_E]) {
-                short_projectile_new(self, self->position, backward, 2, 10);
-                self->punchCooldown = 50;
-            }
+        if(SDL_JoystickGetButton(joystick, 2) == 1)
+        {
+                slog("Triangle");
+                gf3d_model_free(self->model);
+                self->model = gf3d_model_load("models/kiryuLK.model");
+                self->state = ES_attack;
+                self->atkCooldown = 200;
         }
+        if(SDL_JoystickGetButton(joystick, 3) == 1)
+        {
+                slog("Square");
+                gf3d_model_free(self->model);
+                self->model = gf3d_model_load("models/kiryuLP.model");
+                self->state = ES_attack;
+                self->atkCooldown = 100;
+        }
+        if(SDL_JoystickGetButton(joystick, 5) == 1)
+        {
+                slog("R1");
+                gf3d_model_free(self->model);
+                self->model = gf3d_model_load("models/kiryuForRK.model");
+                self->state = ES_attack;
+                self->atkCooldown = 1000;
+        }
+    }
+    else if(self->atkCooldown == 75)
+    {
+        gf3d_model_free(self->model);
+        self->model = gf3d_model_load("models/kiryu.model");
+        self->state = ES_attack;
+        self->atkCooldown--;
     }
     else
     {
-        if (keys[SDL_SCANCODE_UP] && (self->jumped==0))
-        {
-            self->jumped = 1;
-            self->acceleration.z += 1;
-            self->velocity.z += 2;
-        }
-        if (keys[SDL_SCANCODE_DOWN])
-        {
-            self->position.z -= 1;
-        }
-        if (keys[SDL_SCANCODE_RIGHT])
-        {
-            vector3d_add(self->position,self->position,forward);
-        }
-        if (keys[SDL_SCANCODE_LEFT])
-        {
-            vector3d_add(self->position,self->position,-forward);
-        }
-        if (keys[SDL_SCANCODE_P]) {
-            self->blocking = 1;
-            if (self->blocking)
-            {
-                shield_new(self, shieldPosition, backward);
-                self->blocking = 0;
-            }
+        self->atkCooldown--;
+        self->state = ES_stand;
+    }*/
 
-        }
-        if (self->projectileCooldown <= 0) {
-            if (keys[SDL_SCANCODE_RCTRL]) {
-                projectile_new(self, self->position, backward, 1, 10);
-                self->projectileCooldown = 100;
-            }
-        }
-        if (self->punchCooldown <= 0) {
-            if (keys[SDL_SCANCODE_RSHIFT]) {
-                short_projectile_new(self, self->position, backward, 2, 10);
-                self->punchCooldown = 50;
-            }
-        }
+
+    switch(self->state)
+    {
+        case ES_stand:
+            //stand
+            break;
+        case ES_stBlock:
+            // stand block
+            break;
+        case ES_ch:
+            // crouch
+            break;
+        case ES_chBlock:
+            // crouch block
+            break;
+        case ES_attack:
+            //attack frame
+            break;
+        case ES_knockd:
+            //knocked down
+            break;
     }
-
 }
 
 /*eol@eof*/

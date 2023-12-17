@@ -133,40 +133,39 @@ void entity_think_all()
     }
 }
 
-int entity_collide_check(Entity *self, Entity *other)
+int entity_check_collision(Entity *self, Entity *other)
 {
     Box A, B;
-    if ((!self)||(!other))
+    if((!self) || (!other))
     {
-        slog("missing entity data for collision check");
+        slog("Entity missing for collision");
         return 0;
     }
-    gfc_box_cpy(A,self->bounds);
-    gfc_box_cpy(B,other->bounds);
-    vector3d_add(A,A,self->position);
-    vector3d_add(B,B,other->position);
-    return gfc_box_overlap(A,B);
+    gfc_box_cpy(A, self->bounds);
+    gfc_box_cpy(B, self->bounds);
+    vector3d_add(A, A, self->position);
+    vector3d_add(B, B, self->position);
+    return gfc_box_overlap(A, B);
 }
 
-Entity *entity_get_collision_entity(Entity *self)
+Entity *entity_get_collision(Entity *self)
 {
     int i;
-    if (!self)
+
+    if(!self)
     {
-        slog("no self provided");
+        slog("You don't exist");
         return NULL;
     }
-    for (i = 0; i < entity_manager.entity_count; i++)
+
+    for(i = 0; i < entity_manager.entity_count; i++)
     {
-        if (!entity_manager.entity_list[i]._inuse)continue;
-        if (self == &entity_manager.entity_list[i])continue;
-        if (self->parent == &entity_manager.entity_list[i])continue;
-        if (entity_collide_check(self, &entity_manager.entity_list[i]))
-        {
-            //we have a collision:
-            return &entity_manager.entity_list[i];
-        }
+            if(!entity_manager.entity_list[i]._inuse) continue;
+            if(self == &entity_manager.entity_list[i]) continue;
+            if(self->parent == &entity_manager.entity_list[i]) continue;
+            if(entity_check_collision(self, &entity_manager.entity_list[i])) return &entity_manager.entity_list[i];
     }
+
     return NULL;
 }
 
