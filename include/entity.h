@@ -9,11 +9,21 @@
 
 typedef enum
 {
-    ES_idle = 0,
-    ES_hunt,
-    ES_dead,
-    ES_attack
+    ES_stand = 0,
+    ES_stBlock,
+    ES_ch,
+    ES_chBlock,
+    ES_attack,
+    ES_knockd
 }EntityState;
+
+typedef enum
+{
+    ENT_WALL = 0,
+    ENT_P1,
+    ENT_P2,
+    ENT_PROJ
+}EntityType;
 
 
 typedef struct Entity_S
@@ -38,6 +48,7 @@ typedef struct Entity_S
     void       (*onDeath)(struct Entity_S *self); /**<pointer to an funciton to call when the entity dies*/
     
     EntityState state;
+    EntityType type;
     
     Vector3D    position;  
     Vector3D    velocity;
@@ -47,8 +58,11 @@ typedef struct Entity_S
     Vector3D    rotation;
     
     Uint32      health;     /**<entity dies when it reaches zero*/
-    // WHATEVER ELSE WE MIGHT NEED FOR ENTITIES
+    float       atkCooldown;
+    float       damage;
+
     struct Entity_S *target;    /**<entity to target for weapons / ai*/
+    struct Entity_S *parent;
     
     void *customData;   /**<IF an entity needs to keep track of extra data, we can do it here*/
 }Entity;
