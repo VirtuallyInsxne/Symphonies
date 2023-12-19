@@ -54,10 +54,6 @@ int main(int argc,char *argv[])
             edit = true;
             custom = true;
         }
-        if (strcmp(argv[a],"--custom") == 0)
-        {
-            custom = true;
-        }
     }
 
     if(edit)

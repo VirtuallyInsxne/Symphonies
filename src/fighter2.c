@@ -149,7 +149,7 @@ void fighter2_think(Entity *self)
 
     if(other != NULL && other->type == ENT_P1 && self->state == ES_attack)
     {
-        slog("Collision between players occured");
+        slog("Collision detected");
         other->currHealth-=10;
     }
     else if (other != NULL && other->type == ENT_P1) {
@@ -161,98 +161,10 @@ void fighter2_think(Entity *self)
     if (!self)
         return;
 
-    /*if (SDL_JoystickGetAxis(joystick, 0) > 32700)
-    {
-        slog("axis movement detected");
-    }
-
-    if ((keys[SDL_SCANCODE_W] || SDL_JoystickGetAxis(joystick, 1) < -32700) && (self->jumped == 0))
-    {
-        self->jumped = 1;
-        self->acceleration.z += 1;
-        self->velocity.z += 2;
-    }
-    if (keys[SDL_SCANCODE_S] || SDL_JoystickGetAxis(joystick, 1) > 32700)
-    {
-        self->position.z -= 1;
-    }
-    if (keys[SDL_SCANCODE_D] || SDL_JoystickGetAxis(joystick, 0) < -32700)
-    {
-        vector3d_add(self->position, self->position, forward);
-    }
-    if (keys[SDL_SCANCODE_A] || SDL_JoystickGetAxis(joystick, 0) > 32700)
-    {
-        vector3d_add(self->position, self->position, -forward);
-    }
-    if (self->atkCooldown <= 0)
-    {
-        if (SDL_JoystickGetButton(joystick, 0) == 1)
-        {
-            slog("Cross");
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/kiryuRP.model");
-            self->state = ES_attack_low; // For example, this move always hits low
-            self->atkCooldown = 400;
-        }
-        if (SDL_JoystickGetButton(joystick, 1) == 1)
-        {
-            slog("Circle");
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/kiryuRK.model");
-            self->state = ES_attack_high; // For example, this move always hits high
-            self->atkCooldown = 600;
-        }
-        if (SDL_JoystickGetButton(joystick, 3) == 1)
-        {
-            slog("Triangle");
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/kiryuLK.model");
-            self->state = ES_attack;
-            self->atkCooldown = 200;
-        }
-        if (SDL_JoystickGetButton(joystick, 2) == 1)
-        {
-            slog("Square");
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/kiryuLP.model");
-            self->state = ES_attack;
-            self->atkCooldown = 100;
-        }
-        if (SDL_JoystickGetButton(joystick, 5) == 1)
-        {
-            slog("R1");
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/kiryuForRK.model");
-            self->state = ES_attack;
-            self->atkCooldown = 1000;
-        }
-    }
-    else if (self->atkCooldown == 75)
-    {
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/kiryu.model");
-        self->state = ES_stand;
-        self->atkCooldown--;
-    }
-    else
-    {
-        self->atkCooldown--;
-        self->state = ES_stand;
-    }*/
-
     switch (self->state)
     {
     case ES_stand:
         // stand
-        break;
-    case ES_stBlock:
-        // stand block
-        break;
-    case ES_ch:
-        // crouch
-        break;
-    case ES_chBlock:
-        // crouch block
         break;
     case ES_attack:
         break;

@@ -10,9 +10,6 @@
 typedef enum
 {
     ES_stand = 0,
-    ES_stBlock,
-    ES_ch,
-    ES_chBlock,
     ES_attack,
     ES_attack_low,
     ES_attack_mid,

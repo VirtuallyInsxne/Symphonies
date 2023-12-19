@@ -144,12 +144,6 @@ void agumon_think(Entity *self)
 
     other = entity_get_collision(self);
 
-    if (other != NULL && other->type == ENT_P2)
-    {
-        // Characters have collided
-        vector3d_add(self->position, self->position, vector3d(-self->velocity.x, -self->velocity.y, 0.0f));
-    }
-
     if(other != NULL && other->type == ENT_P2 && self->state == ES_attack && entity_check_collision(self, other))
     {
             slog("Collision between players occured");
@@ -189,7 +183,7 @@ void agumon_think(Entity *self)
             gfc_sound_play(sound_effect, 0, 30, -1, -1);
 
             gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1RP.model");
+            self->model = gf3d_model_load("models/fighter1RightPunch.model");
             slog("Mid Collision");
             self->state = ES_attack;
             self->atkCooldown = 100;
@@ -200,7 +194,7 @@ void agumon_think(Entity *self)
             gfc_sound_play(sound_effect, 0, 30, -1, -1);
 
             gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1RK.model");
+            self->model = gf3d_model_load("models/fighter1RightKick.model");
             slog("Mid Collision");
             self->state = ES_attack;
             self->atkCooldown = 200;
@@ -211,7 +205,7 @@ void agumon_think(Entity *self)
             gfc_sound_play(sound_effect, 0, 30, -1, -1);
 
             gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1LK.model");
+            self->model = gf3d_model_load("models/fighter1LeftKick.model");
             slog("Low Collision");
             self->state = ES_attack;
             self->atkCooldown = 150;
@@ -222,17 +216,10 @@ void agumon_think(Entity *self)
             gfc_sound_play(sound_effect, 0, 30, -1, -1);
 
             gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1LP.model");
+            self->model = gf3d_model_load("models/fighter1LeftPunch.model");
             slog("High Collision");
             self->state = ES_attack;
             self->atkCooldown = 100;
-        }
-        if(SDL_JoystickGetButton(joystick, 5) == 1)
-        {
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1ForRK.model");
-            self->state = ES_attack;
-            self->atkCooldown = 300;
         }
     }
     else if(self->atkCooldown == 75)
@@ -253,15 +240,6 @@ void agumon_think(Entity *self)
     {
         case ES_stand:
             //stand
-            break;
-        case ES_stBlock:
-            // stand block
-            break;
-        case ES_ch:
-            // crouch
-            break;
-        case ES_chBlock:
-            // crouch block
             break;
         case ES_attack:
             //attack frame
