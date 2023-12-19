@@ -146,16 +146,11 @@ void agumon_think(Entity *self)
 
     if(other != NULL && other->type == ENT_P2 && self->state == ES_attack && entity_check_collision(self, other))
     {
-            slog("Collision between players occured");
+            slog("Collision detected);
             other->currHealth -= 10;
     }
 
     if (!self)return;
-
-
-    /*if(SDL_JoystickGetAxis(joystick, 0) > 32700){
-       slog("axis movement detected");
-    }*/
 
     if ((keys[SDL_SCANCODE_W] || SDL_JoystickGetAxis(joystick, 1) < -32700) && (self->jumped == 0))
     {
