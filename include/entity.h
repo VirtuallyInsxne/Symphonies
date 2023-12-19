@@ -14,7 +14,9 @@ typedef enum
     ES_ch,
     ES_chBlock,
     ES_attack,
-    ES_knockd
+    ES_attack_low,
+    ES_attack_mid,
+    ES_attack_high
 }EntityState;
 
 typedef enum
@@ -22,7 +24,9 @@ typedef enum
     ENT_WALL = 0,
     ENT_P1,
     ENT_P2,
-    ENT_PROJ
+    ENT_PROJ_LOW,
+    ENT_PROJ_MID,
+    ENT_PROJ_HIGH
 }EntityType;
 
 
@@ -36,7 +40,13 @@ typedef struct Entity_S
     Uint8       selected;
     Color       selectedColor;      /**<Color for highlighting*/
     
-    Box         bounds; // for collisions
+    Box         bounds;
+    Box         lowBounds; // for collisions
+    Box         midBounds;
+    Box         highBounds;
+    Box         lowAttackBounds;
+    Box         midAttackBounds;
+    Box         highAttackBounds;
     int         team;  //same team dont clip
     int         clips;  // if false, skip collisions
     int         jumped; // true if entity jumped
@@ -61,7 +71,9 @@ typedef struct Entity_S
     Vector3D    scale;
     Vector3D    rotation;
     
-    Uint32      health;     /**<entity dies when it reaches zero*/
+    Uint32      currHealth;     /**<entity dies when it reaches zero*/
+    Uint32      maxHealth;
+
     float       atkCooldown;
     float       damage;
 
@@ -118,6 +130,12 @@ void entity_think_all();
 void entity_update_all();
 
 int entity_check_collision(Entity *self, Entity *other);
+
+int entity_check_collision_low(Entity *self, Entity *other);
+
+int entity_check_collision_mid(Entity *self, Entity *other);
+
+int entity_check_collision_high(Entity *self, Entity *other);
 
 Entity *entity_get_collision(Entity *self);
 

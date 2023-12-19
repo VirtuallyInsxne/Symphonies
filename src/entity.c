@@ -148,6 +148,63 @@ int entity_check_collision(Entity *self, Entity *other)
     return gfc_box_overlap(A, B);
 }
 
+int entity_check_collision_low(Entity *self, Entity *other)
+{
+    Box A, B;
+    if ((!self) || (!other))
+    {
+        slog("Entity missing for collision");
+        return 0;
+    }
+
+    gfc_box_cpy(A, self->lowAttackBounds);
+    gfc_box_cpy(B, other->lowBounds);
+
+    // Add the positions to the bounding boxes
+    vector3d_add(A, A, self->position);
+    vector3d_add(B, B, other->position);
+
+    return gfc_box_overlap(A, B);
+}
+
+int entity_check_collision_mid(Entity *self, Entity *other)
+{
+    Box A, B;
+    if ((!self) || (!other))
+    {
+        slog("Entity missing for collision");
+        return 0;
+    }
+
+    gfc_box_cpy(A, self->midAttackBounds);
+    gfc_box_cpy(B, other->midBounds);
+
+    // Add the positions to the bounding boxes
+    vector3d_add(A, A, self->position);
+    vector3d_add(B, B, other->position);
+
+    return gfc_box_overlap(A, B);
+}
+
+int entity_check_collision_high(Entity *self, Entity *other)
+{
+    Box A, B;
+    if ((!self) || (!other))
+    {
+        slog("Entity missing for collision");
+        return 0;
+    }
+
+    gfc_box_cpy(A, self->highAttackBounds);
+    gfc_box_cpy(B, other->highBounds);
+
+    // Add the positions to the bounding boxes
+    vector3d_add(A, A, self->position);
+    vector3d_add(B, B, other->position);
+
+    return gfc_box_overlap(A, B);
+}
+
 Entity *entity_get_collision(Entity *self)
 {
     int i;

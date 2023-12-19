@@ -20,6 +20,12 @@ typedef struct
     char                   *fragShader;             /**<the shader loaded from disk*/
     size_t                  fragSize;               /**<memory size of the shader*/
     VkShaderModule          fragModule;             /**<the index of the shader module within the device*/
+    char                   *toonVertShader;             /**<the shader loaded from disk*/
+    size_t                  toonVertSize;               /**<memory size of the shader*/
+    VkShaderModule          toonVertModule;             /**<the index of the shader module within the device*/
+    char                   *toonFragShader;             /**<the shader loaded from disk*/
+    size_t                  toonFragSize;               /**<memory size of the shader*/
+    VkShaderModule          toonFragModule;
     VkDevice                device;
     Uint32                 *descriptorCursor;       /**<keeps track of which descriptors have been used per frame*/
     VkDescriptorPool       *descriptorPool;

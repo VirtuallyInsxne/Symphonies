@@ -5,5 +5,19 @@
         "position":[0,0,-50],
         "scale":[25,25,25],
         "rotation":[0,0,0]
-    }
+    },
+
+    "spawns":
+    [
+        {
+            "name":"player1",
+            "position":[5,5,0],
+            "health":150
+        },
+        {
+            "name":"player2",
+            "position":[-5,5,0],
+            "health":150
+        }
+    ]
 }

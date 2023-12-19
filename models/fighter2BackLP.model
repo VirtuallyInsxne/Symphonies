@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "model":"models/fighter2/fighter2BackLP.obj",
+        "texture":"images/default.png"
+    }
+}

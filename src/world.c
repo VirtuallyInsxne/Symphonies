@@ -5,20 +5,56 @@
 #include "gfc_config.h"
 
 #include "world.h"
+#include "agumon.h"
+#include "fighter2.h"
 
-/*
-typedef struct
+
+/*typedef struct
 {
 
     Model *worldModel;
     List *spawnList;        //entities to spawn
     List *entityList;       //entities that exist in the world
-}World;
-*/
+}World;*/
+
+Entity *spawn_entity_from_config(World *self, SJson *spawn)
+{
+    const char *name = sj_get_string_value(sj_object_get_value(spawn,"name"));
+    //slog(name);
+    Entity *ent = NULL;
+    Vector3D pos;
+    Uint32 health;
+    if(strcmp(name,"player1") == 0)
+    {
+        slog("Spawned player 1");
+        sj_value_as_vector3d(sj_object_get_value(spawn,"position"),&pos);
+        sj_get_uint32_value(sj_object_get_value(spawn, "health"), &health);
+        ent = agumon_new(pos,vector3d(0,0,-GFC_HALF_PI), 1);
+        if (ent)ent->selected = 1;
+        ent->maxHealth = health;
+        ent->currHealth = health;
+        gfc_list_append(self->entityList,ent);
+        return ent;
+    }
+    else if (strcmp(name,"player2") == 0)
+    {
+        slog("Spawned player 2");
+        sj_value_as_vector3d(sj_object_get_value(spawn,"position"),&pos);
+        sj_get_uint32_value(sj_object_get_value(spawn, "health"), &health);
+        ent = fighter2_new(pos, vector3d(0,0,GFC_HALF_PI), 2);
+        if (ent)ent->selected = 1;
+        ent->maxHealth = health;
+        ent->currHealth = health;
+        gfc_list_append(self->entityList,ent);
+        return ent;
+    }
+
+    return NULL;
+}
 
 World *world_load(char *filename)
 {
-    SJson *json,*wjson;
+    SJson *json,*wjson,*spawns;
     World *w = NULL;
     const char *modelName = NULL;
     w = gfc_allocate_array(sizeof(World),1);
@@ -51,9 +87,24 @@ World *world_load(char *filename)
     }
     w->model = gf3d_model_load(modelName);
 
+    spawns = sj_object_get_value(json, "spawns");
+    slog("Made the spawns object");
+    if(!spawns)
+    {
+        slog("didn't work");
+    }
+    int count,i;
+    w->entityList = gfc_list_new();
+    count = sj_array_get_count(spawns);
+    for(i = 0; i < count; i++)
+    {
+        spawn_entity_from_config(w, sj_array_get_nth(spawns,i));
+    }
+
     sj_value_as_vector3d(sj_object_get_value(wjson,"scale"),&w->scale);
     sj_value_as_vector3d(sj_object_get_value(wjson,"position"),&w->position);
     sj_value_as_vector3d(sj_object_get_value(wjson,"rotation"),&w->rotation);
+
     sj_free(json);
     w->color = gfc_color(1,1,1,1);
     return w;
