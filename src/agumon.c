@@ -227,13 +227,6 @@ void agumon_think(Entity *self)
             self->state = ES_attack;
             self->atkCooldown = 100;
         }
-        if(SDL_JoystickGetButton(joystick, 5) == 1)
-        {
-            gf3d_model_free(self->model);
-            self->model = gf3d_model_load("models/fighter1ForRK.model");
-            self->state = ES_attack;
-            self->atkCooldown = 300;
-        }
     }
     else if(self->atkCooldown == 75)
     {
